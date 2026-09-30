@@ -1,0 +1,44 @@
+# Build trees
+/build/
+/build-*/
+/out/
+/install/
+/prefix/
+/stage/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+
+# IDE artifacts
+.vs/
+.vscode/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# Compiled objects and binaries
+*.obj
+*.o
+*.a
+*.lib
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.exp
+*.idb
+
+# Scratch and validation residue
+/scratch/
+*.tmp
+*.log
