@@ -1,7 +1,6 @@
 # Maintenance Policy
 
-Facility maintenance policy evaluation runtime for the DCCP estate (repository 46 of 72, Tranche 6:
-Facility Policy, Tenancy, and Entitlement).
+Facility maintenance policy evaluation runtime.
 
 `maintpol` decides whether a proposed maintenance window may proceed. It is a decision service, not a
 scheduler: given an authoritative policy bundle, an attributed evidence set, and a maintenance
