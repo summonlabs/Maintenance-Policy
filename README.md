@@ -1,9 +1,9 @@
-﻿# Maintenance Policy
+# Maintenance Policy
 
 Facility maintenance policy evaluation runtime for the DCCP estate (repository 46 of 72, Tranche 6:
 Facility Policy, Tenancy, and Entitlement).
 
-`maintpolÂ` decides whether a proposed maintenance window may proceed. It is a decision service, not a
+`maintpol` decides whether a proposed maintenance window may proceed. It is a decision service, not a
 scheduler: given an authoritative policy bundle, an attributed evidence set, and a maintenance
 request, it returns a deterministic verdict with the exact rule, exception, approval, generation and
 digest that produced it.
@@ -17,10 +17,10 @@ The answer is one of four outcomes, and every one of them is attributable:
 
 | Outcome | Meaning |
 | --- | --- |
-| `allowÂ` | Nothing in policy forbids the work, and every constraint that applies is satisfied. |
-| `require-escalationÂ` | A soft constraint is violated or an escalation rule triggered, and no authority at the required level has approved this exact request. |
-| `unknownÂ` | The question cannot be resolved: evidence is missing, stale, unmeasured, fenced, or an authority is defective. This is a refusal, never a silent "healthy". |
-| `denyÂ` | Policy forbids the work: a hard interlock, a protected class, a blackout window, a redundancy floor, a revoked policy generation. |
+| `allow` | Nothing in policy forbids the work, and every constraint that applies is satisfied. |
+| `require-escalation` | A soft constraint is violated or an escalation rule triggered, and no authority at the required level has approved this exact request. |
+| `unknown` | The question cannot be resolved: evidence is missing, stale, unmeasured, fenced, or an authority is defective. This is a refusal, never a silent "healthy". |
+| `deny` | Policy forbids the work: a hard interlock, a protected class, a blackout window, a redundancy floor, a revoked policy generation. |
 
 ## Owned boundary
 
@@ -57,7 +57,7 @@ a verdict. It never performs or simulates the external effect.
 1. **Observation is not authority.** An evidence report is data; a verdict is authority only after it
    binds the exact policy generation, control epoch, registry revision and request digest.
 2. **Missing is never healthy.** Absent, unmeasured, stale, future-dated or epoch-fenced evidence
-   produces `unknownÂ`, never `allowÂ`. A request that declares no affected obligation classes cannot
+   produces `unknown`, never `allow`. A request that declares no affected obligation classes cannot
    satisfy a class-scoped requirement; the omission is a refusal.
 3. **Hard safety interlocks are non-waivable.** A hard interlock or protected-class rule can never be
    relaxed. A document that marks one waivable is rejected at parse time, and a request that presents
@@ -80,30 +80,30 @@ a verdict. It never performs or simulates the external effect.
 
 | Field | Owner | Invalidates |
 | --- | --- | --- |
-| `policy_generationÂ` | the committing operator | every approval and exception issued against an earlier generation; every decision bound to it |
-| `policy_digestÂ` | the canonical policy document | the same, at content level: any rule change changes the digest |
-| `control_epochÂ` | the store | previous live authority: a stale manifest is detected against the fence journal |
-| `registry_revisionÂ` | the store | registry-only edits (exceptions, approvals) without a policy change |
-| `evidence_epochÂ` | the measuring system | evidence older than the policy fence (`min_evidence_epochÂ`) |
-| `request_digestÂ` | the caller | approvals: an approval authorises one exact request |
-| `semantics_versionÂ` | this repository | decisions issued under older evaluation semantics |
+| `policy_generation` | the committing operator | every approval and exception issued against an earlier generation; every decision bound to it |
+| `policy_digest` | the canonical policy document | the same, at content level: any rule change changes the digest |
+| `control_epoch` | the store | previous live authority: a stale manifest is detected against the fence journal |
+| `registry_revision` | the store | registry-only edits (exceptions, approvals) without a policy change |
+| `evidence_epoch` | the measuring system | evidence older than the policy fence (`min_evidence_epoch`) |
+| `request_digest` | the caller | approvals: an approval authorises one exact request |
+| `semantics_version` | this repository | decisions issued under older evaluation semantics |
 
 A decision binds all of them, together with the digests of the evidence set, the interlock report,
 every referenced exception and every referenced approval.
 
 ### Store-level fencing
 
-A new generation must be exactly `current + 1Â`, a new control epoch exactly `current + 1Â`, and the
+A new generation must be exactly `current + 1`, a new control epoch exactly `current + 1`, and the
 registry revision must stay or advance by one. The store never invents authority for the caller, and
 it never adopts a record that the manifest does not name. A manifest that is older than the highest
 fence entry is treated as a rollback and the store refuses to open.
 
 ## Lifecycle model
 
-Policy generations move `draft -> published -> superseded -> revokedÂ`, with `draft -> revokedÂ` and
-`published -> revokedÂ` also permitted. Only `publishedÂ` authorises decisions; `draftÂ` and
-`supersededÂ` are refusals, `revokedÂ` is a denial. Exceptions carry `issued_atÂ`, `not_beforeÂ`,
-`expires_atÂ` and an optional `revoked_atÂ`; approvals carry the same window plus the exact request
+Policy generations move `draft -> published -> superseded -> revoked`, with `draft -> revoked` and
+`published -> revoked` also permitted. Only `published` authorises decisions; `draft` and
+`superseded` are refusals, `revoked` is a denial. Exceptions carry `issued_at`, `not_before`,
+`expires_at` and an optional `revoked_at`; approvals carry the same window plus the exact request
 digest they authorise. Revocation is registry state and is excluded from the signed body, so revoking
 a record never invalidates its signature and a signature can never be extended by editing registry
 state.
@@ -129,8 +129,8 @@ classes = "*"
 window = "2026-03-01T00:00:00Z 2026-03-01T06:00:00Z"
 ```
 
-* Sections are `[name]Â` or `[name argument]Â`; keys match `[a-z][a-z0-9_.-]*Â`.
-* Values are bare, or quoted with `\\Â`, `\"Â`, `\nÂ`, `\rÂ`, `\tÂ`, `\xHHÂ` escapes.
+* Sections are `[name]` or `[name argument]`; keys match `[a-z][a-z0-9_.-]*`.
+* Values are bare, or quoted with `\\`, `\"`, `\n`, `\r`, `\t`, `\xHH` escapes.
 * Parsing is strict: unknown sections, unknown keys, duplicate single-valued keys, missing required
   keys, impossible enum values, malformed digests, out-of-range numbers and unbounded collections are
   all errors with a stable code.
@@ -147,15 +147,15 @@ the Unix epoch. The supported range is:
 1677-09-21T00:12:43.145224192Z  ..  2262-04-11T23:47:16.854775807Z
 ```
 
-Text form is `YYYY-MM-DDTHH:MM:SS.fffffffffZÂ`; an explicit numeric offset (`+HH:MMÂ`) is accepted and
-normalised to UTC. Civil dates are validated (leap years, month lengths), year `0000Â` is rejected,
+Text form is `YYYY-MM-DDTHH:MM:SS.fffffffffZ`; an explicit numeric offset (`+HH:MM`) is accepted and
+normalised to UTC. Civil dates are validated (leap years, month lengths), year `0000` is rejected,
 leap seconds are rejected rather than smeared, and named time zones are not supported: callers supply
-an offset. All blackout intervals are half-open `[start, end)Â`: the start instant is inside the
+an offset. All blackout intervals are half-open `[start, end)`: the start instant is inside the
 window, the end instant is not. Two intervals that merely touch do not intersect.
 
 ### Recurrence
 
-Recurrence is bounded by construction: a period kind (`dailyÂ`, `weeklyÂ`, `monthlyÂ`), an origin, a
+Recurrence is bounded by construction: a period kind (`daily`, `weekly`, `monthly`), an origin, a
 fixed offset, a per-period window start offset, a duration, and a period count of at most 512. The
 expansion is materialised deterministically at evaluation time. A monthly recurrence whose day does
 not exist in a month yields no window for that period rather than being clamped. Overlapping blackout
@@ -164,7 +164,7 @@ stable across a serialisation round trip.
 
 ## Evaluation semantics
 
-The engine is a pure function of `(bundle, keys, request, prior decisions)Â`. It never reads a clock,
+The engine is a pure function of `(bundle, keys, request, prior decisions)`. It never reads a clock,
 never touches the file system and never mutates its inputs; callers supply the authoritative
 evaluation instant. Stages run in a fixed order and **every** condition found is reported, with the
 highest severity present deciding the outcome:
@@ -183,12 +183,12 @@ highest severity present deciding the outcome:
 11. escalation and approval verification
 ```
 
-Severity precedence is fixed and documented in `include/maintpol/error.hppÂ`:
-`denial > refusal > escalation > advisory > infoÂ`. A finding attributes the condition to the smallest
+Severity precedence is fixed and documented in `include/maintpol/error.hpp`:
+`denial > refusal > escalation > advisory > info`. A finding attributes the condition to the smallest
 set of inputs that produced it (rule, exception, approval, obligation class, or plain code), and
 findings are sorted deterministically by severity, code and attribution.
 
-Refusal codes never become permissive: `unknownÂ` means the runtime could not establish that the work
+Refusal codes never become permissive: `unknown` means the runtime could not establish that the work
 is permitted.
 
 ## The store
@@ -202,7 +202,7 @@ is permitted.
   decisions.mpd append-only decision journal
 ```
 
-Every record is framed as `header\n<exact payload length>\n<crc32>\n<payload>Â`. The commit protocol
+Every record is framed as `header\n<exact payload length>\n<crc32>\n<payload>`. The commit protocol
 for a new generation is:
 
 ```
@@ -228,8 +228,8 @@ append fence entry -> flush -> read back and verify
 
 The store is **single-writer, many-reader**:
 
-* A writer holds an exclusive OS lock (`LOCKÂ`) for the lifetime of the handle: on Windows the file is
-  opened with read-only sharing and an exclusive byte-range lock, on POSIX with `flock(LOCK_EX)Â`.
+* A writer holds an exclusive OS lock (`LOCK`) for the lifetime of the handle: on Windows the file is
+  opened with read-only sharing and an exclusive byte-range lock, on POSIX with `flock(LOCK_EX)`.
   A second writer cannot even open the lock file.
 * The kernel releases the lock when the process dies, so a crashed writer never leaves a stale lock;
   this is covered by a test that kills a writer while it holds the store.
@@ -239,7 +239,7 @@ The store is **single-writer, many-reader**:
 * Inside the library there is no shared mutable state: the engine is a pure function and a store's
   state is confined to one owning handle. There are no locks held across callbacks, no lock upgrades,
   no re-entrant acquisition and no blocking I/O performed while holding an internal lock. The writer
-  lock is acquired in `openÂ`/`createÂ` and released by the owning object's destructor; no code path
+  lock is acquired in `open`/`create` and released by the owning object's destructor; no code path
   acquires it twice. Public operations are synchronous and single-threaded by design, so the library
   makes no thread-safety claim beyond that: separate handles, plus the writer-exclusion guarantee
   above, are what concurrency is built on.
@@ -249,7 +249,7 @@ The store is **single-writer, many-reader**:
 ## Error semantics
 
 Codes are a persisted contract: the numeric value of a code is part of canonical documents and of
-every decision digest, and codes are never renumbered or reused. `include/maintpol/error.hppÂ` is the
+every decision digest, and codes are never renumbered or reused. `include/maintpol/error.hpp` is the
 single source of truth, with a class (input, time, policy, authority, policy state, evidence,
 evaluation, store, internal), a severity, and a description per code. An unknown numeric code is an
 error, never a default.
@@ -273,20 +273,20 @@ maintpol eval (--store <dir> | --bundle <file>) --request <file> [--keys <file>]
 maintpol bench --store <dir> --request <file> --iterations <n> [--keys <file>]
 ```
 
-Exit codes are part of the contract: `0Â` allowed (or command success), `1Â` usage, input or storage
-error, `2Â` denied, `3Â` unknown, `4Â` escalation required.
+Exit codes are part of the contract: `0` allowed (or command success), `1` usage, input or storage
+error, `2` denied, `3` unknown, `4` escalation required.
 
-`--fault-crash-at <point>Â` terminates the process abruptly at a named stage of a durable commit. It
+`--fault-crash-at <point>` terminates the process abruptly at a named stage of a durable commit. It
 exists so that crash consistency can be tested against real processes: the store is reopened
 afterwards and must present exactly one authoritative generation.
 
 Authoritative state:
 
-* `evalÂ` never trusts the request for authority. Exceptions and approvals named by a request are
-  looked up in the registry, and their MACs are verified with key material supplied through `--keysÂ`.
-* `store showÂ`, `store verifyÂ`, `store historyÂ`, `store decisionsÂ` and `store getÂ` are read-only and
+* `eval` never trusts the request for authority. Exceptions and approvals named by a request are
+  looked up in the registry, and their MACs are verified with key material supplied through `--keys`.
+* `store show`, `store verify`, `store history`, `store decisions` and `store get` are read-only and
   therefore work while another process owns the store.
-* `store putÂ` requires the document to declare exactly the next generation and control epoch; the
+* `store put` requires the document to declare exactly the next generation and control epoch; the
   store refuses to guess.
 
 A short session:
@@ -315,8 +315,8 @@ if (decision) {
 }
 ```
 
-Everything public is in `include/maintpol/Â`. The engine returns `Result<T>Â`, which carries either a
-value or an `ErrorÂ` with a stable code and a bounded detail string; there is no "empty success" state.
+Everything public is in `include/maintpol/`. The engine returns `Result<T>`, which carries either a
+value or an `Error` with a stable code and a bounded detail string; there is no "empty success" state.
 
 ## Build, install and consume
 
@@ -334,11 +334,11 @@ find_package(maintpol CONFIG REQUIRED)
 target_link_libraries(your_target PRIVATE SummonLabs::maintpol)
 ```
 
-Options: `MAINTPOL_BUILD_CLIÂ`, `MAINTPOL_BUILD_TESTSÂ`, `MAINTPOL_WARNINGS_AS_ERRORSÂ`,
-`MAINTPOL_ENABLE_ASANÂ`. First-party code is built with `/W4 /WX /permissive-Â` on MSVC and
-`-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -WshadowÂ` plus `-WerrorÂ` elsewhere.
+Options: `MAINTPOL_BUILD_CLI`, `MAINTPOL_BUILD_TESTS`, `MAINTPOL_WARNINGS_AS_ERRORS`,
+`MAINTPOL_ENABLE_ASAN`. First-party code is built with `/W4 /WX /permissive-` on MSVC and
+`-Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wshadow` plus `-Werror` elsewhere.
 
-`examples/downstreamÂ` is an independent out-of-tree consumer that links only against an installed
+`examples/downstream` is an independent out-of-tree consumer that links only against an installed
 prefix and exercises evaluation, store publication, decision recording, replay and a generation
 fence.
 
